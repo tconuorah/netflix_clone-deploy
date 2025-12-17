@@ -1,0 +1,44 @@
+################################
+# Node / Expo
+################################
+node_modules/
+.expo/
+.expo-shared/
+dist/
+web-build/
+npm-debug.log*
+yarn-error.log*
+
+################################
+# Environment / Secrets
+################################
+.env
+.env.*
+*.pem
+*.key
+
+################################
+# Docker
+################################
+**/.dockerignore
+
+################################
+# Terraform
+################################
+**/.terraform/
+**/.terraform.lock.hcl
+**/terraform.tfstate
+**/terraform.tfstate.*
+crash.log
+
+################################
+# OS / Editor
+################################
+.DS_Store
+.vscode/
+.idea/
+
+################################
+# Git
+################################
+.git/
