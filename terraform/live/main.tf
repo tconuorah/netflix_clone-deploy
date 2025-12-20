@@ -10,7 +10,7 @@ module "vpc" {
 
 module "ecr" {
   source = "../modules/ecr"
-  name   = "${var.project}"
+  name   = var.project
   tags   = var.tags
 }
 
@@ -22,31 +22,44 @@ module "eks" {
   tags               = var.tags
 }
 
+# If you already have an IAM module that creates an instance profile, keep this.
+# Otherwise, remove the iam_instance_profile lines below.
 module "iam" {
   source  = "../modules/iam"
   project = var.project
   tags    = var.tags
 }
 
+############################################
+# EC2 #1: Jenkins (t2.large)
+############################################
 module "jenkins" {
-  source               = "../modules/ec2"
-  name                 = "${var.project}-jenkins"
-  vpc_id               = module.vpc.vpc_id
-  subnet_id            = module.vpc.public_subnets[0]
+  source    = "../modules/ec2"
+  name      = "${var.project}-jenkins"
+  vpc_id    = module.vpc.vpc_id
+  subnet_id = module.vpc.public_subnets[0]
+
+  instance_type = "t2.medium"
+
   key_name             = var.key_name
   admin_cidrs          = var.admin_cidrs
   tags                 = var.tags
-  user_data            = file("${path.module}/user_data_jenkins.sh")
   iam_instance_profile = module.iam.jenkins_instance_profile
 }
 
-module "sonar" {
-  source      = "../modules/ec2"
-  name        = "${var.project}-sonarqube"
-  vpc_id      = module.vpc.vpc_id
-  subnet_id   = module.vpc.public_subnets[0]
-  key_name    = var.key_name
-  admin_cidrs = var.admin_cidrs
-  tags        = var.tags
-  user_data   = file("${path.module}/user_data_sonar.sh")
+############################################
+# EC2 #2: Prometheus + Grafana (t2.medium)
+############################################
+module "monitoring" {
+  source    = "../modules/ec2"
+  name      = "${var.project}-monitoring"
+  vpc_id    = module.vpc.vpc_id
+  subnet_id = module.vpc.public_subnets[1]
+
+  instance_type = "t2.medium"
+
+  key_name             = var.key_name
+  admin_cidrs          = var.admin_cidrs
+  tags                 = var.tags
+  iam_instance_profile = module.iam.jenkins_instance_profile
 }

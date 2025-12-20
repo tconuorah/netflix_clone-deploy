@@ -33,7 +33,7 @@ locals {
   private_subnets = lookup(local.private_subnets_by_env, local.env, ["10.50.11.0/24", "10.50.12.0/24"])
 
   # Tags: your base tags + env tag from workspace
- tags = merge(var.tags, {
+  tags = merge(var.tags, {
     Env = local.env
   })
 }

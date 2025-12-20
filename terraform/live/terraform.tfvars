@@ -1,4 +1,4 @@
-project     = "netflix_clone"
+project     = "netflix"
 key_name    = "kp"
 admin_cidrs = ["0.0.0.0/0"]
 
@@ -10,5 +10,5 @@ private_subnets = ["10.0.11.0/24", "10.0.12.0/24"]
 
 tags = {
   Owner   = "Terrence"
-  Project = "netflix_clone"
+  Project = "netflix"
 }
