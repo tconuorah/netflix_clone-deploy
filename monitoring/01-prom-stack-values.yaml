@@ -1,0 +1,25 @@
+# monitoring/01-prom-stack-values.yaml
+
+grafana:
+  enabled: true
+
+  adminPassword: "ChangeMe-StrongPassword"
+
+  service:
+    type: LoadBalancer
+
+  # Provision dashboards + alerting from ConfigMaps
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+    datasources:
+      enabled: true
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+
+alertmanager:
+  enabled: true

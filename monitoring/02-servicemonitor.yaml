@@ -1,0 +1,19 @@
+# monitoring/02-servicemonitor-flask.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: netflix-servicemonitor
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+      - default
+  selector:
+    matchLabels:
+      app: netflix
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s
