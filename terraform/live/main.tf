@@ -47,19 +47,4 @@ module "jenkins" {
   iam_instance_profile = module.iam.jenkins_instance_profile
 }
 
-############################################
-# EC2 #2: Prometheus + Grafana (t2.medium)
-############################################
-module "monitoring" {
-  source    = "../modules/ec2"
-  name      = "${var.project}-monitoring"
-  vpc_id    = module.vpc.vpc_id
-  subnet_id = module.vpc.public_subnets[1]
 
-  instance_type = "t2.medium"
-
-  key_name             = var.key_name
-  admin_cidrs          = var.admin_cidrs
-  tags                 = var.tags
-  iam_instance_profile = module.iam.jenkins_instance_profile
-}

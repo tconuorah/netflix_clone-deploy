@@ -4,7 +4,7 @@ terraform {
     region               = "us-east-2"
     use_lockfile         = true
     encrypt              = true
-    workspace_key_prefix = "iac"               # folder prefix
+    workspace_key_prefix = "env"               # folder prefix
     key                  = "terraform.tfstate" # constant filename
   }
 }
