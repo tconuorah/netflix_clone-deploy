@@ -1,59 +1,6 @@
-resource "aws_iam_role" "jenkins_role" {
-  name = "${var.project}-jenkins-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow",
-      Principal = { Service = "ec2.amazonaws.com" },
-      Action = "sts:AssumeRole"
-    }]
-  })
-
-  tags = var.tags
-}
-
-resource "aws_iam_policy" "jenkins_policy" {
-  name = "${var.project}-jenkins-policy"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:InitiateLayerUpload",
-          "ecr:UploadLayerPart",
-          "ecr:CompleteLayerUpload",
-          "ecr:PutImage",
-          "ecr:DescribeRepositories"
-        ],
-        Resource = "*"
-      },
-      {
-        Effect = "Allow",
-        Action = ["eks:DescribeCluster"],
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "attach" {
-  role       = aws_iam_role.jenkins_role.name
-  policy_arn = aws_iam_policy.jenkins_policy.arn
-}
-
-resource "aws_iam_instance_profile" "jenkins_profile" {
-  name = "${var.project}-jenkins-profile"
-  role = aws_iam_role.jenkins_role.name
-}
-
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_cluster" {
-  name = "eks-cluster-role"
+  name = "${var.project}-jenkins-policy"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -71,7 +18,7 @@ resource "aws_iam_role" "eks_cluster" {
 
 # IAM Role for EKS Node Group
 resource "aws_iam_role" "eks_node_group" {
-  name = "eks-node-group-role"
+  name = "${var.project}-jenkins-policy"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

@@ -5,13 +5,13 @@ module "vpc" {
   azs             = var.azs
   public_subnets  = var.public_subnets
   private_subnets = var.private_subnets
-  tags            = var.tags
+  tags            = local.tags
 }
 
 module "ecr" {
   source = "../modules/ecr"
   name   = var.project
-  tags   = var.tags
+  tags   = local.tags
 }
 
 module "eks" {
@@ -19,7 +19,7 @@ module "eks" {
   cluster_name       = "${var.project}-eks"
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnets
-  tags               = var.tags
+  tags               = local.tags
 }
 
 # If you already have an IAM module that creates an instance profile, keep this.
@@ -27,7 +27,7 @@ module "eks" {
 module "iam" {
   source  = "../modules/iam"
   project = var.project
-  tags    = var.tags
+  tags    = local.tags
 }
 
 ############################################
@@ -41,10 +41,9 @@ module "jenkins" {
 
   instance_type = "t2.medium"
 
-  key_name             = var.key_name
-  admin_cidrs          = var.admin_cidrs
-  tags                 = var.tags
-  iam_instance_profile = module.iam.jenkins_instance_profile
+  key_name    = var.key_name
+  admin_cidrs = var.admin_cidrs
+  tags        = local.tags
 }
 
 

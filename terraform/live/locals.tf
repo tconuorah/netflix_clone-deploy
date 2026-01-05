@@ -34,6 +34,7 @@ locals {
 
   # Tags: your base tags + env tag from workspace
   tags = merge(var.tags, {
-    Env = local.env
+    Env  = local.env
+    name = var.project
   })
 }
