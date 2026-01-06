@@ -60,7 +60,6 @@ pipeline {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
           sh """
             set -e
-            export AWS_PAGER=""
             aws sts get-caller-identity
             aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}
             
