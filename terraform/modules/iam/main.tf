@@ -1,36 +1,29 @@
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_cluster" {
-  name = "${var.project}-jenkins-policy"
+  name = "${var.project}-eks-cluster-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-      }
-    ]
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "eks.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
   })
 }
 
+
 # IAM Role for EKS Node Group
 resource "aws_iam_role" "eks_node_group" {
-  name = "${var.project}-jenkins-policy"
+  name = "${var.project}-eks-node-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-      }
-    ]
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
   })
 }
 
@@ -85,6 +78,43 @@ resource "aws_iam_role_policy" "ecr_pull_full_access" {
           "ecr:ListImages",
           "ecr:DescribeRepositories",
           "ecr:GetRepositoryPolicy"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_instance_profile" "jenkins" {
+  name = "${var.project}-jenkins-profile"
+  role = aws_iam_role.jenkins.name
+}
+
+resource "aws_iam_role" "jenkins" {
+  name = "${var.project}-jenkins-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Service = "ec2.amazonaws.com" }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "jenkins_eks_read" {
+  name = "${var.project}-jenkins-policy"
+  role = aws_iam_role.jenkins.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = [
+          "eks:DescribeCluster",
+          "eks:ListClusters"
         ]
         Resource = "*"
       }

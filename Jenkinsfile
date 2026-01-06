@@ -59,7 +59,7 @@ pipeline {
       steps {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
           sh """
-            aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}
+            aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --profile netflix-jenkins-profile
 
             kubectl get ns ${HELM_NAMESPACE} >/dev/null 2>&1 || kubectl create ns ${HELM_NAMESPACE}
 

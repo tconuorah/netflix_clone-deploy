@@ -41,9 +41,10 @@ module "jenkins" {
 
   instance_type = "t2.medium"
 
-  key_name    = var.key_name
-  admin_cidrs = var.admin_cidrs
-  tags        = local.tags
+  key_name             = var.key_name
+  admin_cidrs          = var.admin_cidrs
+  iam_instance_profile = module.iam.jenkins_instance_profile_name
+  tags                 = local.tags
 }
 
 
