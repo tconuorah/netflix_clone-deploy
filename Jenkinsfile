@@ -15,7 +15,7 @@ pipeline {
     // Helm settings
     HELM_RELEASE      = 'netflix'
     HELM_NAMESPACE    = 'netflix'
-    HELM_CHART_PATH   = './netflix-helm/netflix'   // <-- path to your chart in the repo
+    HELM_CHART_PATH   = './helm/netflix'   // <-- path to your chart in the repo
 
     // Derived
     ECR_REGISTRY      = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
