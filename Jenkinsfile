@@ -59,8 +59,11 @@ pipeline {
       steps {
         withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
           sh """
-            aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --profile netflix-jenkins-profile
-
+            set -e
+            aws sts get-caller-identity
+            aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}
+            
+            kubectl get ns --request-timeout=10s -v=6
             kubectl get ns ${HELM_NAMESPACE} >/dev/null 2>&1 || kubectl create ns ${HELM_NAMESPACE}
 
             helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
