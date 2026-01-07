@@ -40,6 +40,31 @@ pipeline {
       }
     }
 
+    stage('Build Vars') {
+  steps {
+    script {
+      // Resolve AWS account from instance role
+      def acct = sh(
+        script: "aws sts get-caller-identity --query Account --output text",
+        returnStdout: true
+      ).trim()
+
+      // Export once for entire pipeline
+      env.IMAGE_REPO = "${acct}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO_NAME}"
+      env.IMAGE_TAG  = sh(
+        script: "git rev-parse --short HEAD",
+        returnStdout: true
+      ).trim()
+
+      // Visibility (safe to log)
+      echo "Using IMAGE_REPO=${env.IMAGE_REPO}"
+      echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
+    }
+  }
+}
+
+
+
     stage('Build Docker Image') {
       steps {
         sh """
@@ -48,8 +73,8 @@ pipeline {
           ECR_REGISTRY="\${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
           IMAGE_REPO="\${ECR_REGISTRY}/${ECR_REPO_NAME}"
 
-          docker build -t \${IMAGE_REPO}:${IMAGE_TAG} ./app
-          echo "IMAGE_REPO=\${IMAGE_REPO}" > image.env
+          docker build -t \${env.IMAGE_REPO}:${env.IMAGE_TAG} ./app
+          echo "IMAGE_REPO=\${env.IMAGE_REPO}" > image.env
         """
       }
     }
@@ -61,7 +86,7 @@ pipeline {
           . image.env
 
           echo "IMAGE_REPO=\$IMAGE_REPO"
-          echo "IMAGE_TAG=${IMAGE_TAG}"
+          echo "IMAGE_TAG=${env.IMAGE_TAG}"
 
           aws sts get-caller-identity
 
@@ -71,7 +96,7 @@ pipeline {
           REGISTRY="\$(echo \$IMAGE_REPO | cut -d/ -f1)"
           aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "\$REGISTRY"
 
-          docker push "\$IMAGE_REPO:${IMAGE_TAG}"
+          docker push "\$IMAGE_REPO:${env.IMAGE_TAG}"
         """
       }
     }
@@ -89,8 +114,8 @@ pipeline {
           helm upgrade --install ${HELM_RELEASE} ${HELM_CHART_PATH} \
             --namespace ${HELM_NAMESPACE} \
             --create-namespace \
-            --set image.repository=\${IMAGE_REPO} \
-            --set image.tag=${IMAGE_TAG} \
+            --set image.repository=\${env.IMAGE_REPO} \
+            --set image.tag=${env.IMAGE_TAG} \
             --atomic --timeout 10m
         """
       }
@@ -102,7 +127,7 @@ pipeline {
       sh """
         set +e
         if [ -f image.env ]; then . image.env; fi
-        [ -n "\${IMAGE_REPO}" ] && docker image rm -f \${IMAGE_REPO}:${IMAGE_TAG} >/dev/null 2>&1 || true
+        [ -n "\${env.IMAGE_REPO}" ] && docker image rm -f \${env.IMAGE_REPO}:${env.IMAGE_TAG} >/dev/null 2>&1 || true
       """
     }
   }
