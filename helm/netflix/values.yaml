@@ -7,11 +7,11 @@ replicaCount: 2
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: 022440376442.dkr.ecr.us-east-2.amazonaws.com/netflix
+  repository: 022440376442.dkr.ecr.us-east-2.amazonaws.com/dev-netflix
   # This sets the pull policy for images.
   pullPolicy: always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: ""
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
