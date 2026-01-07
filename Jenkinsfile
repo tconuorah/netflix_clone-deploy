@@ -58,7 +58,7 @@ pipeline {
       steps {
         sh """
           set -e
-          source image.env
+          . image.env
 
           echo "IMAGE_REPO=\$IMAGE_REPO"
           echo "IMAGE_TAG=${IMAGE_TAG}"
@@ -81,7 +81,7 @@ pipeline {
       steps {
         sh """
           set -e
-          source image.env
+          . image.env
 
           aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}
 
@@ -101,7 +101,7 @@ pipeline {
     always {
       sh """
         set +e
-        if [ -f image.env ]; then source image.env; fi
+        if [ -f image.env ]; then . image.env; fi
         [ -n "\${IMAGE_REPO}" ] && docker image rm -f \${IMAGE_REPO}:${IMAGE_TAG} >/dev/null 2>&1 || true
       """
     }
