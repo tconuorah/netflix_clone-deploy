@@ -60,15 +60,22 @@ pipeline {
           set -e
           source image.env
 
+          echo "IMAGE_REPO=\$IMAGE_REPO"
+          echo "IMAGE_TAG=${IMAGE_TAG}"
+
+          aws sts get-caller-identity
+
           aws ecr describe-repositories --repository-names ${ECR_REPO_NAME} --region ${AWS_REGION} >/dev/null 2>&1 || \
             aws ecr create-repository --repository-name ${ECR_REPO_NAME} --region ${AWS_REGION}
 
-          aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin \$(echo ${IMAGE_REPO} | cut -d/ -f1)
+          REGISTRY="\$(echo \$IMAGE_REPO | cut -d/ -f1)"
+          aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin "\$REGISTRY"
 
-          docker push \${IMAGE_REPO}:${IMAGE_TAG}
+          docker push "\$IMAGE_REPO:${IMAGE_TAG}"
         """
       }
     }
+
 
     stage('Deploy to EKS with Helm') {
       steps {
