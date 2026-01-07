@@ -1,16 +1,13 @@
-
 variable "region" {
   type    = string
-  default = "us-east-2"
 }
-variable "project" { type = string }
-variable "key_name" { type = string }
-variable "admin_cidrs" { type = list(string) }
 
+variable "key_name" {
+  description = "Existing EC2 key pair name"
+  type        = string
+}
 
-variable "vpc_cidr" { type = string }
-variable "azs" { type = list(string) }
-variable "public_subnets" { type = list(string) }
-variable "private_subnets" { type = list(string) }
-
-variable "tags" { type = map(string) }
+variable "ssh_allowed_cidr" {
+  description = "Your public IP /32"
+  type        = string
+}

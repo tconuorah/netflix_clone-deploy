@@ -1,40 +1,47 @@
+data "aws_availability_zones" "az" {}
+
 locals {
-  # Workspace becomes your env name: dev, staging, prod
   env = terraform.workspace
+  azs = slice(data.aws_availability_zones.az.names, 0, 2)
 
-  name = "${var.project}-${local.env}"
+  # SIMPLE workspace config:
+  envs = {
+    dev = {
+      vpc_cidr   = "10.0.0.0/16"
+      public     = ["10.0.1.0/24", "10.0.2.0/24"]
+      private    = ["10.0.11.0/24", "10.0.12.0/24"]
+      instance   = "t3.medium"
+      node_types = ["t3.medium"]
+      desired    = 2
+      min        = 1
+      max        = 3
+    }
 
-  # Prefix used for naming resources so they don't collide across envs
-  name_prefix = "${var.project}-${local.env}"
+    staging = {
+      vpc_cidr   = "10.5.0.0/16"
+      public     = ["10.5.1.0/24", "10.5.2.0/24"]
+      private    = ["10.5.11.0/24", "10.5.12.0/24"]
+      instance   = "t3.medium"
+      node_types = ["t3.medium"]
+      desired    = 2
+      min        = 1
+      max        = 4
+    }
 
-  # Per-env VPC CIDRs
-  vpc_cidrs = {
-    dev     = "10.10.0.0/16"
-    staging = "10.20.0.0/16"
-    prod    = "10.30.0.0/16"
+    prod = {
+      vpc_cidr   = "10.10.0.0/16"
+      public     = ["10.10.1.0/24", "10.10.2.0/24"]
+      private    = ["10.10.11.0/24", "10.10.12.0/24"]
+      instance   = "t3.medium"
+      node_types = ["t3.medium"]
+      desired    = 3
+      min        = 2
+      max        = 6
+    }
   }
 
-  # Per-env subnets (2 AZs)
-  public_subnets_by_env = {
-    dev     = ["10.10.1.0/24", "10.10.2.0/24"]
-    staging = ["10.20.1.0/24", "10.20.2.0/24"]
-    prod    = ["10.30.1.0/24", "10.30.2.0/24"]
-  }
+  # ✅ Strict workspace enforcement
+  cfg  = local.envs[local.env]
 
-  private_subnets_by_env = {
-    dev     = ["10.10.11.0/24", "10.10.12.0/24"]
-    staging = ["10.20.11.0/24", "10.20.12.0/24"]
-    prod    = ["10.30.11.0/24", "10.30.12.0/24"]
-  }
-
-  # Final values used by modules (fallbacks provided)
-  vpc_cidr        = lookup(local.vpc_cidrs, local.env, "10.50.0.0/16")
-  public_subnets  = lookup(local.public_subnets_by_env, local.env, ["10.50.1.0/24", "10.50.2.0/24"])
-  private_subnets = lookup(local.private_subnets_by_env, local.env, ["10.50.11.0/24", "10.50.12.0/24"])
-
-  # Tags: your base tags + env tag from workspace
-  tags = merge(var.tags, {
-    Env  = local.env
-    name = var.project
-  })
+  name = "${local.env}-netflix"
 }
