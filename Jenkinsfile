@@ -19,30 +19,24 @@ pipeline {
 
   stages {
     stage('Checkout') {
-      steps { checkout scm }
+      steps {
+        checkout scm
+      }
     }
 
     stage('Build Vars') {
       steps {
         script {
-          def acct = sh(
-            script: "aws sts get-caller-identity --query Account --output text",
-            returnStdout: true
-          ).trim()
-
+          def acct = sh(script: "aws sts get-caller-identity --query Account --output text", returnStdout: true).trim()
           env.IMAGE_REPO = "${acct}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO_NAME}"
-          env.IMAGE_TAG  = sh(
-            script: "git rev-parse --short HEAD",
-            returnStdout: true
-          ).trim()
-
+          env.IMAGE_TAG  = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
           echo "Using IMAGE_REPO=${env.IMAGE_REPO}"
           echo "Using IMAGE_TAG=${env.IMAGE_TAG}"
         }
       }
     }
 
-    stage('Verify AWS Identity (Instance Role)') {
+    stage('Verify AWS Identity') {
       steps {
         sh '''#!/usr/bin/env bash
           set -e
@@ -68,8 +62,6 @@ pipeline {
           set -e
           export AWS_PAGER=""
 
-          aws sts get-caller-identity
-
           aws ecr describe-repositories --repository-names "${env.ECR_REPO_NAME}" --region "${env.AWS_REGION}" >/dev/null 2>&1 || \
             aws ecr create-repository --repository-name "${env.ECR_REPO_NAME}" --region "${env.AWS_REGION}"
 
@@ -86,8 +78,8 @@ pipeline {
         sh """#!/usr/bin/env bash
           set -e
           export AWS_PAGER=""
-          KCFG="/var/jenkins_home/.kube/${env.EKS_CLUSTER_NAME}.config"
 
+          KCFG="/var/jenkins_home/.kube/${env.EKS_CLUSTER_NAME}.config"
           mkdir -p /var/jenkins_home/.kube
 
           aws eks update-kubeconfig \
@@ -100,4 +92,20 @@ pipeline {
           helm --kubeconfig "\$KCFG" upgrade --install "${env.HELM_RELEASE}" "${env.HELM_CHART_PATH}" \
             --namespace "${env.HELM_NAMESPACE}" \
             --create-namespace \
-            --set image.repository="${env.IMAGE
+            --set image.repository="${env.IMAGE_REPO}" \
+            --set image.tag="${env.IMAGE_TAG}" \
+            --atomic --timeout 10m
+        """
+      }
+    }
+  }
+
+  post {
+    always {
+      sh """#!/usr/bin/env bash
+        set +e
+        docker image rm -f "${env.IMAGE_REPO}:${env.IMAGE_TAG}" >/dev/null 2>&1 || true
+      """
+    }
+  }
+}
