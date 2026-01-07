@@ -36,3 +36,13 @@ resource "aws_eks_access_policy_association" "jenkins_admin" {
 
   access_scope { type = "cluster" }
 }
+
+resource "aws_security_group_rule" "jenkins_to_eks_api_egress" {
+  type                     = "egress"
+  description              = "Jenkins to EKS API"
+  security_group_id         = aws_security_group.jenkins.id
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = module.eks.cluster_security_group_id
+}
