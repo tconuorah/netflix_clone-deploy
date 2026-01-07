@@ -84,24 +84,31 @@ pipeline {
     }
 
     stage('Deploy to EKS with Helm') {
-      steps {
-        sh """#!/usr/bin/env bash
-          set -e
-          export AWS_PAGER=""
+     steps {
+    sh """#!/usr/bin/env bash
+      set -e
+      export AWS_PAGER=""
+      KCFG="/var/jenkins_home/.kube/${env.EKS_CLUSTER_NAME}.config"
 
-          aws eks update-kubeconfig --name "${env.EKS_CLUSTER_NAME}" --region "${env.AWS_REGION}"
+      mkdir -p /var/jenkins_home/.kube
 
-          kubectl get ns --request-timeout=10s
-          helm upgrade --install "${env.HELM_RELEASE}" "${env.HELM_CHART_PATH}" \
-            --namespace "${env.HELM_NAMESPACE}" \
-            --create-namespace \
-            --set image.repository="${env.IMAGE_REPO}" \
-            --set image.tag="${env.IMAGE_TAG}" \
-            --atomic --timeout 10m
-        """
-      }
-    }
+      aws eks update-kubeconfig \
+        --name "${env.EKS_CLUSTER_NAME}" \
+        --region "${env.AWS_REGION}" \
+        --kubeconfig "\$KCFG"
+
+      kubectl --kubeconfig "\$KCFG" get ns --request-timeout=20s
+
+      helm --kubeconfig "\$KCFG" upgrade --install "${env.HELM_RELEASE}" "${env.HELM_CHART_PATH}" \
+        --namespace "${env.HELM_NAMESPACE}" \
+        --create-namespace \
+        --set image.repository="${env.IMAGE_REPO}" \
+        --set image.tag="${env.IMAGE_TAG}" \
+        --atomic --timeout 10m
+    """
   }
+}
+
 
   post {
     always {
