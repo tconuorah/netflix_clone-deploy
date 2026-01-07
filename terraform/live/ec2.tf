@@ -91,7 +91,6 @@ resource "aws_iam_role_policy" "jenkins_eks_describe" {
   })
 }
 
-
 resource "aws_instance" "jenkins" {
   ami                         = data.aws_ami.al2023.id
   instance_type               = local.cfg.instance
