@@ -25,20 +25,31 @@ resource "aws_security_group" "jenkins" {
   }
 }
 
-data "aws_ami" "al2023" {
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["al2023-ami-*-x86_64"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
 }
+
 
 
 data "aws_iam_policy_document" "ec2_assume" {
@@ -92,7 +103,7 @@ resource "aws_iam_role_policy" "jenkins_eks_describe" {
 }
 
 resource "aws_instance" "jenkins" {
-  ami                         = data.aws_ami.al2023.id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = local.cfg.instance
   subnet_id                   = aws_subnet.public[0].id
   vpc_security_group_ids      = [aws_security_group.jenkins.id]
